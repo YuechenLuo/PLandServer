@@ -13,7 +13,7 @@ import java.util.Map;
 public class PLandServer {
 
     public static GameContext gameContext;
-    public static Map<Byte, Channel> userChannels = new HashMap<Byte, Channel>();
+    public static Map<Integer, Channel> userChannels = new HashMap<Integer, Channel>();
 
     final static int DEFAULT_PORT = 8080;
     private int port;

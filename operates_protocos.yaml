@@ -1,0 +1,59 @@
+Operates protocos:
+
+    03 = SPLIT
+    04 = END
+    F0 = Fail
+
+    gaming (1):
+        join (0):
+            req:
+                10 [USERNAME] SPLIT
+            res:
+                10 <YOUR ID> <MAP ID> <# OF USERS> [YOUR USERNAME] SPLIT
+                [LocX] SPLIT [LocY] SPLIT <ANGLE> <SPEED>
+        leave (1):
+            req:
+                11
+            res:
+                11 <YOUR ID>
+
+    locations (2):
+        press W (0):
+            req: 20
+            res: 20 <USER ID>
+        release W (1):
+            req: 21
+            res: 21 <USER ID>
+        press S (2):
+            req: 22
+            res: 22 <USER ID>
+        release S (3):
+            req: 23
+            res: 23 <USER ID>
+        press A (4):
+            req: 24
+            res: 24 <USER ID>
+        release A (5):
+            req: 25
+            res: 25 <USER ID>
+        press D (6):
+            req: 26
+            res: 26 <USER ID>
+        release D (7):
+            req: 27
+            res: 27 <USER ID>
+        location (8):
+            req: 28 <location>
+            res: 28 <USER ID> [LocX] SPLIT [LocY] SPLIT
+                <ANGLE> ( [USERNAME] SPLIT <SPEED> )
+        ANGLE (9):
+            req: 29 <ANGLE>
+            res: 29 <USER ID> <ANGLE>
+        SPEED (A):
+            req: 29 <SPEED>
+            res: 29 <USER ID> <SPEED>
+
+    # Interactions:
+    #     * LR click
+
+

@@ -1,14 +1,16 @@
 package pland.gamecore;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import pland.PLandServer;
 import pland.gamecore.models.Player;
 
 import java.util.Map;
 
-public class Messager {
+public class Messenger {
     final public static char SPLIT          =   0x03;
     final public static char END            =   0x04;
+    final public static int NUMBER_ENCODING_BIAS = 10;
 
     final public static char JOIN_GAME      =   0x10;
     final public static char LEAVE_GAME     =   0x11;
@@ -22,15 +24,11 @@ public class Messager {
     final public static char D_PRESSED      =   0x26;
     final public static char D_RELEASED     =   0x27;
     final public static char LOCATION       =   0x28;
-    final public static char ANGLE          =   0x29;
+    final public static char ANGLE_UPDATE   =   0x29;
+    final public static char SPEED_UPDATE   =   0x2A;
+
 
     final public static char FAIL           =   0xFE;
-
-
-    final public static int UP              =   0x0100;
-    final public static int DOWN            =   0x0101;
-    final public static int LEFT            =   0x0102;
-    final public static int RIGHT           =   0x0103;
 
 
     /**
@@ -38,43 +36,46 @@ public class Messager {
      * @param uid
      * @return
      */
-    public static String joinGameResponse(byte uid) {
+    public static ByteBuf joinGameResponse(int uid) {
         GameContext gt = PLandServer.gameContext;
-        Map<Byte, Player> pm = gt.getPlayerMap();
-        Player p = pm.get(uid);
+        Map<Integer, Player> pm = gt.getPlayerMap();
         if ( !pm.keySet().contains(uid) ) throw new IllegalArgumentException();
+        Player p = pm.get(uid);
 
-        return new StringBuilder()
+        return Unpooled.copiedBuffer(
+                new StringBuilder()
                 .append(JOIN_GAME)
-                .append((char) uid)
-                .append((char) gt.getMapInfo().getMapId())
-                .append((char) pm.keySet().size())
+                .append((char) (uid+NUMBER_ENCODING_BIAS))
+                .append((char) (gt.getMapInfo().getMapId()+NUMBER_ENCODING_BIAS))
+                .append((char) (pm.keySet().size()+NUMBER_ENCODING_BIAS))
                 .append(p.getUsername()).append(SPLIT)
                 .append(p.getLocX()).append(SPLIT)
                 .append(p.getLocY()).append(SPLIT)
-                .append((char) p.getAngle())
+                .append((char) (p.getAngle()+NUMBER_ENCODING_BIAS))
+                .append((char) (p.getSpeed()+NUMBER_ENCODING_BIAS))
                 .append(END)
-                .toString();
+                .toString().getBytes());
     }
 
 
     /**
-     * response message for user location(s)
+     * response message with all users' information
      * @return
      */
-    public static String userLocationResponse() {
+    public static ByteBuf allUsersInfo() {
         StringBuilder sb = new StringBuilder();
         for (Player p : PLandServer.gameContext.getPlayerMap().values()) {
             sb.append(LOCATION)
-                    .append((char) p.getId())
-                    .append(p.getUsername()).append(SPLIT)
+                    .append((char) (p.getId()+NUMBER_ENCODING_BIAS))
                     .append(p.getLocX()).append(SPLIT)
                     .append(p.getLocY()).append(SPLIT)
-                    .append((char) p.getAngle())
+                    .append((char) (p.getAngle()+NUMBER_ENCODING_BIAS))
+                    .append(p.getUsername()).append(SPLIT)
+                    .append((char) (p.getSpeed()+NUMBER_ENCODING_BIAS))
                     .append(END);
         }
 
-        return sb.toString();
+        return Unpooled.copiedBuffer(sb.toString().getBytes());
     }
 
 
@@ -84,19 +85,32 @@ public class Messager {
      * @param movingState
      * @return
      */
-    public static String userMovingMessage(byte uid, char movingState) {
-        return new StringBuilder()
+    public static ByteBuf userMovingMessage(int uid, char movingState) {
+        return Unpooled.copiedBuffer(
+                new StringBuilder()
                 .append(movingState)
-                .append((char) uid)
+                .append((char) (uid+NUMBER_ENCODING_BIAS))
                 .append(END)
-                .toString();
+                .toString().getBytes());
+    }
+
+
+    public static ByteBuf userTurningMessage(int uid, char angle) {
+        return Unpooled.copiedBuffer(
+                new StringBuilder()
+                .append(ANGLE_UPDATE)
+                .append((char) (uid+NUMBER_ENCODING_BIAS))
+                .append(angle)
+                .append(END)
+                .toString().getBytes()
+        );
     }
 
 
     public static int getNextInteger(ByteBuf buf) {
         int res = 0;
         byte b;
-        while ( buf.isReadable() && (b = buf.readByte()) != Messager.SPLIT ) {
+        while ( buf.isReadable() && (b = buf.readByte()) != Messenger.SPLIT ) {
             res = res * 10 + b - 48;
         }
         return res;
@@ -105,9 +119,10 @@ public class Messager {
     public static String getNextString(ByteBuf buf) {
         StringBuilder sb = new StringBuilder();
         byte b;
-        while ( buf.isReadable() && (b = buf.readByte()) != Messager.SPLIT ) {
+        while ( buf.isReadable() && (b = buf.readByte()) != Messenger.SPLIT ) {
             sb.append((char) b);
         }
         return sb.toString();
     }
+
 }

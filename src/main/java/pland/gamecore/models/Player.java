@@ -7,14 +7,15 @@ import pland.gamecore.PLand;
 
 public class Player {
 
-    public Player(byte id, String username) {
+    public Player(int id, String username) {
         this.id = id;
         this.username = username;
         this.speed = PLand.USER_INITIAL_MOVING_SPEED;
+        this.angle = PLand.USER_INITIAL_ANGLE;
     }
 
     @Getter @Setter
-    private byte id;
+    private int id;
 
     @Getter @Setter
     private String username;
@@ -26,10 +27,10 @@ public class Player {
     private int locY;
 
     @Getter @Setter
-    private byte angle;
+    private int angle;
 
     @Setter @Getter
-    private byte speed;
+    private int speed;
 
     @Getter @Setter
     private boolean movingUp;

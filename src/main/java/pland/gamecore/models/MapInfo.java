@@ -8,7 +8,7 @@ import lombok.Setter;
 public class MapInfo {
 
     @Getter @Setter
-    private byte MapId;
+    private int MapId;
 
     @Getter @Setter
     private int weight;
