@@ -16,4 +16,8 @@ public class MapInfo {
     @Getter @Setter
     private int height;
 
+    public boolean canGo(int x, int y) {
+        return !(x < 0 || x > this.weight || y < 0 || y > this.height);
+    }
+
 }

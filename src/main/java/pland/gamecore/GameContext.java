@@ -48,13 +48,22 @@ public class GameContext {
         int id = 0;
         for (;idSet.contains(id);id++);
         // TODO: unique username
-        Player player = new Player(id, username);
+        Player player = new Player(id, username, this.mapInfo);
 
         if (setRandomUserLocation(player)) {
             this.getPlayerMap().put(id, player);
             return player;
         }
         return null;
+    }
+
+
+    /**
+     * Remove a user
+     * @param uid
+     */
+    public void removeUser(int uid) {
+        this.playerMap.remove(uid);
     }
 
 
@@ -91,5 +100,41 @@ public class GameContext {
         }
     }
 
+    /**
+     * change a user's movement state
+     * @param uid
+     * @param direction
+     */
+    public void userMovementChange(int uid, char direction) {
+        Player player = this.playerMap.get(uid);
+        if ( player == null ) throw new IllegalArgumentException();
+
+        switch (direction) {
+            case Messenger.W_PRESSED:
+                player.moveUp();
+                break;
+            case Messenger.W_RELEASED:
+                player.stopMoveUp();
+                break;
+            case Messenger.S_PRESSED:
+                player.moveDown();
+                break;
+            case Messenger.S_RELEASED:
+                player.stopMoveDown();
+                break;
+            case Messenger.A_PRESSED:
+                player.moveLeft();
+                break;
+            case Messenger.A_RELEASED:
+                player.stopMoveLeft();
+                break;
+            case Messenger.D_PRESSED:
+                player.moveRight();
+                break;
+            case Messenger.D_RELEASED:
+                player.stopMoveRight();
+                break;
+        }
+    }
 
 }

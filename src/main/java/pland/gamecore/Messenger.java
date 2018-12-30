@@ -36,14 +36,13 @@ public class Messenger {
      * @param uid
      * @return
      */
-    public static ByteBuf joinGameResponse(int uid) {
+    public static String joinGameMessage(int uid) {
         GameContext gt = PLandServer.gameContext;
         Map<Integer, Player> pm = gt.getPlayerMap();
         if ( !pm.keySet().contains(uid) ) throw new IllegalArgumentException();
         Player p = pm.get(uid);
 
-        return Unpooled.copiedBuffer(
-                new StringBuilder()
+        return new StringBuilder()
                 .append(JOIN_GAME)
                 .append((char) (uid+NUMBER_ENCODING_BIAS))
                 .append((char) (gt.getMapInfo().getMapId()+NUMBER_ENCODING_BIAS))
@@ -54,15 +53,41 @@ public class Messenger {
                 .append((char) (p.getAngle()+NUMBER_ENCODING_BIAS))
                 .append((char) (p.getSpeed()+NUMBER_ENCODING_BIAS))
                 .append(END)
-                .toString().getBytes());
+                .toString();
     }
 
+    public static String leaveGameMessage(int uid) {
+        Map<Integer, Player> pm = PLandServer.gameContext.getPlayerMap();
+        if ( !pm.containsKey(uid) ) throw new IllegalArgumentException();
+        return new StringBuilder()
+                .append(LEAVE_GAME)
+                .append((char) (uid+10))
+                .append(END).toString();
+    }
+
+    /**
+     * Message to report a user's location and angle
+     * @param uid
+     * @return
+     */
+    public static String userLocationAngleUpdate(int uid) {
+        Player p = PLandServer.gameContext.getPlayerMap().get(uid);
+        if ( p == null ) throw new IllegalArgumentException();
+
+        return new StringBuilder()
+                .append(LOCATION)
+                .append((char) (uid+10))
+                .append(p.getLocX()).append(SPLIT)
+                .append(p.getLocY()).append(SPLIT)
+                .append((char) (p.getAngle()+10))
+                .append(END).toString();
+    }
 
     /**
      * response message with all users' information
      * @return
      */
-    public static ByteBuf allUsersInfo() {
+    public static String allUsersInfo() {
         StringBuilder sb = new StringBuilder();
         for (Player p : PLandServer.gameContext.getPlayerMap().values()) {
             sb.append(LOCATION)
@@ -75,7 +100,7 @@ public class Messenger {
                     .append(END);
         }
 
-        return Unpooled.copiedBuffer(sb.toString().getBytes());
+        return sb.toString();
     }
 
 
@@ -85,25 +110,27 @@ public class Messenger {
      * @param movingState
      * @return
      */
-    public static ByteBuf userMovingMessage(int uid, char movingState) {
-        return Unpooled.copiedBuffer(
-                new StringBuilder()
+    public static String userMovingMessage(int uid, char movingState) {
+        return new StringBuilder()
                 .append(movingState)
                 .append((char) (uid+NUMBER_ENCODING_BIAS))
                 .append(END)
-                .toString().getBytes());
+                .toString();
     }
 
-
-    public static ByteBuf userTurningMessage(int uid, char angle) {
-        return Unpooled.copiedBuffer(
-                new StringBuilder()
+    /**
+     * Message for user turn to a new angle
+     * @param uid
+     * @param angle
+     * @return
+     */
+    public static String userTurningMessage(int uid, char angle) {
+        return new StringBuilder()
                 .append(ANGLE_UPDATE)
                 .append((char) (uid+NUMBER_ENCODING_BIAS))
                 .append(angle)
                 .append(END)
-                .toString().getBytes()
-        );
+                .toString();
     }
 
 
